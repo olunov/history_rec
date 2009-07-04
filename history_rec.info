@@ -1,0 +1,6 @@
+; $Id$
+name = Browsing History Recommender
+description = Recommend nodes based on users browsing history.
+package = Recommendation
+dependencies[] = recommender
+core = 6.x
