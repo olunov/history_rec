@@ -82,7 +82,7 @@ function history_rec_block($op='list', $delta=0) {
 }
 
 
-function _format_node($item) {
+function _history_rec_format_node($item) {
   $node = node_load($item['id']);
   return l($node->title, "/node/{$node->nid}");
 }
@@ -90,15 +90,16 @@ function _format_node($item) {
 function history_rec_related($node_id) {
   $display_num = variable_get('history_rec_display_num', 5);
   $items = recommender_top_similarity('history_rec', $node_id, $display_num);
-  $items = array_map('_format_node', $items);
+  $items = array_map('_history_rec_format_node', $items);
   return $items;
 }
 
 
 function history_rec_recommended($user_id) {
+  if ($user_id == 0) return NULL; // we don't display stuff for anonymous users
   $display_num = variable_get('history_rec_display_num', 5);
   $items = recommender_top_prediction('history_rec', $user_id, $display_num); 
-  $items = array_map('_format_node', $items); 
+  $items = array_map('_history_rec_format_node', $items); 
   return $items;
 }
 
@@ -110,10 +111,10 @@ function history_rec_run_recommender() {
   }
   
   // get a list of enabled content types to be used in SQL
-  function _wrap_each(&$item) {
+  function _history_rec_wrap_each(&$item) {
     $item = "'$item'";
   }
-  array_walk($enabled_types, '_wrap_each');
+  array_walk($enabled_types, '_history_rec_wrap_each');
   $enabled_types = '('. implode(',', $enabled_types) .')';
   
   $boost_comments = variable_get('history_rec_boost_comments', 1);
@@ -123,7 +124,6 @@ function history_rec_run_recommender() {
   $now = time();
   $days60 = 60*24*60*60;  // seconds in 60 days
   
-  // not respecting $boost_comments and $boost_recency
   // prepare the users-nodes relationship.
 
   $weight = $boost_recency ? "POW(2, -($now-h.timestamp)/$days60)" : 1;
@@ -142,6 +142,8 @@ function history_rec_run_recommender() {
   else {
     $sql = $history_sql;
   }
+  
+  // TODO: might need to do a hack [#510222]
   
   watchdog("history_rec", "Computing w/ SQL: $sql");
   
