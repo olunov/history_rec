@@ -96,7 +96,7 @@ function _history_rec_format_node($item) {
 function history_rec_related($node_id) {
   $display_num = variable_get('history_rec_display_num_rel', 5);
   // added $test=_history_rec_test as the test function for recommender
-  $test = variable_get('history_rec_no_duplicates', 1) ? '_history_rec_test' : NULL;
+  $test = '_history_rec_test';
   $items = recommender_top_similarity('history_rec', $node_id, $display_num, $test);
   $items = array_map('_history_rec_format_node', $items);
   return $items;
@@ -107,7 +107,7 @@ function history_rec_recommended($user_id) {
   if ($user_id == 0) return NULL; // we don't display stuff for anonymous users
   $display_num = variable_get('history_rec_display_num_rec', 5);
   // added $test=_history_rec_test as the test function for recommender
-  $test = variable_get('history_rec_no_duplicates', 1) ? '_history_rec_test' : NULL;
+  $test = '_history_rec_test';
   $items = recommender_top_prediction('history_rec', $user_id, $display_num, $test);
   $items = array_map('_history_rec_format_node', $items);
   return $items;
@@ -169,14 +169,19 @@ function history_rec_run_recommender() {
 
 /**
  * function used as -Recommender- test
- * if node has been viewed already via nodeapi, then do not show
  */
 function _history_rec_test($item){
-  if (_history_rec_exclude_previous($item['id'], 'get') > 0){
-    return FALSE;
-  }
-  else{
-    return TRUE;
+  $node = node_load($item['id']);
+  switch (TRUE) {
+    // skip if shown already
+    case (variable_get('history_rec_no_duplicates', 1) && _history_rec_exclude_previous($item['id'], 'get') > 0):
+    // Skip if user has no access
+    case !node_access('view', $node):
+
+      return FALSE;
+
+    default:
+      return TRUE;
   }
 }
 
@@ -185,8 +190,8 @@ function _history_rec_test($item){
  */
 function history_rec_nodeapi($node, $op, $a3 = NULL, $a4  = NULL){
   static $history_rec_loadedNodes;
-  // counts the number of times a node has been viewed via nodeapi
   if($op == 'view'){
+    // count the number of times a node has been viewed via nodeapi
     _history_rec_exclude_previous($node->nid, 'view');
   }
 };
