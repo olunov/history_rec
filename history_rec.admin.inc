@@ -38,7 +38,7 @@ function history_rec_settings_form() {
   $form['no_duplicates'] = array(
     '#title' => t('Aviod duplicate results'),
     '#type' => 'checkbox',
-    '#description' => t('Check the box to ensure thatif a node is being displayed somwhere in the page, it is not listed as a recommendation.'),
+    '#description' => t('Check the box to ensure that if a node is being displayed some else where in the page, it is not listed as a recommendation.'),
     '#default_value' => variable_get('history_rec_no_duplicates', 1),
   );
 
