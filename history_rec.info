@@ -4,3 +4,10 @@ description = Recommend nodes based on users browsing history.
 package = Recommendation
 dependencies[] = recommender
 core = 6.x
+
+; Information added by drupal.org packaging script on 2009-09-21
+version = "6.x-1.1"
+core = "6.x"
+project = "history_rec"
+datestamp = "1253560848"
+

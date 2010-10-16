@@ -1,0 +1,29 @@
+<?php
+// $Id$
+
+/**
+ * @see http://drupal.org/project/history_rec
+ */
+
+/**
+ * Implementation of hook_update_N().
+ */
+function history_rec_update_6100() {
+  // Delete variable used in old versions
+  variable_del('history_rec_display_num');
+  return array();
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function history_rec_uninstall() {
+  // Get global variable array
+  global $conf;
+  foreach (array_keys($conf) as $key) {
+    // Find variables that have the module prefix
+    if (strpos($key, 'history_rec_') === 0) {
+      variable_del($key);
+    }
+  }
+}
