@@ -10,7 +10,12 @@
  */
 function history_rec_update_6100() {
   // Delete variable used in old versions
+  $display_num = variable_get('history_rec_display_num', 5);
   variable_del('history_rec_display_num');
+
+  // Set new variables with old value
+  variable_set('history_rec_display_num_rel', $display_num);
+  variable_set('history_rec_display_num_rec', $display_num);
   return array();
 }
 
