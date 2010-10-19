@@ -7,7 +7,7 @@
  */
 
 /**
- * Implementation of hook_help().
+ * Implements hook_help().
  */
 function history_rec_help($path, $args) {
   $output = '';
@@ -21,7 +21,7 @@ function history_rec_help($path, $args) {
 
 
 /**
- * Implementation of hook_perm().
+ * Implements hook_perm().
  */
 function history_rec_perm() {
   $perm = array(
@@ -32,7 +32,7 @@ function history_rec_perm() {
 
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function history_rec_menu() {
   $items = array();
@@ -49,7 +49,7 @@ function history_rec_menu() {
 
 
 /**
- * Implementation of hook_block().
+ * Implements hook_block().
  */
 function history_rec_block($op='list', $delta=0) {
   if ($op == 'list') {
@@ -208,7 +208,7 @@ function _history_rec_test($item) {
 }
 
 /**
- * Implementation of HOOK_nodeapi().
+ * Implements HOOK_nodeapi().
  */
 function history_rec_nodeapi($node, $op, $a3 = NULL, $a4  = NULL) {
   static $history_rec_loadedNodes;
