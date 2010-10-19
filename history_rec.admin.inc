@@ -1,11 +1,14 @@
 <?php
-
 // $Id$
 
 /**
- * @see http://drupal.org/project/history_rec
+ * @file
+ * Administration interface for Browsing History Recommender 
  */
 
+/**
+ * Administration form
+ */
 function history_rec_settings_form() {
   $form = array();
 
@@ -23,7 +26,7 @@ function history_rec_settings_form() {
     '#default_value' => variable_get('history_rec_display_num_rel', 5),
     '#size' => 4,
     '#maxlength' => 2,
-    '#description' => t('Please specify how many items to show in the "Related Nodes" block list.') 
+    '#description' => t('Please specify how many items to show in the "Related Nodes" block list.')
   );
 
   $form['display_num_rec'] = array(
@@ -56,7 +59,7 @@ function history_rec_settings_form() {
     '#default_value' => variable_get('history_rec_boost_recency', 1),
   );
 
-  /*$form['algorithm'] = array(
+  /* $form['algorithm'] = array(
     '#title' => t('Choose recommender algorithm'),
     '#type' => 'radios',
     '#default_value' => variable_get('history_rec_algorithm', 'classical'),
@@ -65,7 +68,7 @@ function history_rec_settings_form() {
       'classical' => t("Classical (more accurate; slower performance)"),
     ),
     '#description' => t('Different algorithms are useful in different situations. Please leave it as the default classical algorithm unless you have large number of nodes/users.')
-  );*/
+  ); */
 
   $form['submit'] = array(
     '#type' => 'submit',
@@ -75,6 +78,9 @@ function history_rec_settings_form() {
   return $form;
 }
 
+/**
+ * Submit administration form
+ */
 function history_rec_settings_form_submit($form, &$form_state) {
   $display_num['rel'] = intval($form_state['values']['display_num_rel']);
   $display_num['rec'] = intval($form_state['values']['display_num_rec']);
@@ -95,6 +101,9 @@ function history_rec_settings_form_submit($form, &$form_state) {
   drupal_set_message(t("The configuration options have been saved."));
 }
 
+/**
+ * Validate administration form
+ */
 function history_rec_settings_form_validate($form, &$form_state) {
   if (!is_numeric($form_state['values']['display_num_rel'])) {
     form_set_error('display_num_rel', t('"Number of items to display in the Related block" must be numeric.'));

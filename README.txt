@@ -13,6 +13,8 @@ This module requires Recommender API at http://drupal.org/project/recommender.
 After configure/setup, please go to admin/settings/recommender to generate the
 recommendations.
 
+After update, please run update.php, we do not have a db scheme,
+but we do make changes to variables here and there.
 
 *** Future features ***
 1) Take "accesslog" as browsing history input.
