@@ -3,7 +3,7 @@
 
 /**
  * @file 
- * Installation file
+ * Install, update and uninstall functions for the Browsing History Recommender module.
  */
 
 /**
