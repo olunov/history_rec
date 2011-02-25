@@ -1,6 +1,5 @@
 <?php
 
-// $Id$
 
 /**
  * @see http://drupal.org/project/history_rec
