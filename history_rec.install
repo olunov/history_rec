@@ -31,8 +31,8 @@ function history_rec_schema() {
           'not null' => FALSE,
           'description' => 'Hostname of user that visited the page.',
         ),
-        'updated' => array(
-          'description' => 'The Unix timestamp this record is last changed',
+        'created' => array(
+          'description' => 'The Unix timestamp this record is created.',
           'type' => 'int',
           'not null' => TRUE,
           'default' => 0,
@@ -41,7 +41,7 @@ function history_rec_schema() {
       'primary key' => array('euid'),
       'indexes' => array(
         'uid_hostname' => array('uid', 'hostname'),
-        'updated' => array('updated'),
+        'created' => array('created'),
       ),
     ),
   
@@ -62,12 +62,12 @@ function history_rec_schema() {
           'unsigned' => TRUE,
           'not null' => TRUE,
         ),
-        'score' => array(
-          'type' => 'float',
-          'size' => 'normal',
-          'not null' => FALSE,
-          'description' => 'The preference score. Higher score means source prefers target more.',
-        ),
+        //'score' => array(
+        //  'type' => 'float',
+        //  'size' => 'normal',
+        //  'not null' => FALSE,
+        //  'description' => 'The preference score. Higher score means source prefers target more.',
+        //),
         'updated' => array(
           'description' => 'The Unix timestamp this preference is last changed',
           'type' => 'int',
@@ -120,12 +120,12 @@ function history_rec_install() {
   }*/
   
 
-  $apps['history_rec_i2i'] = array(
+  $apps['history_rec'] = array(
     'title' => st('Browsing History Recommender'),
     'params' => array(
       'algorithm' => 'item2item',
       'table' => '{history}',
-      'fields' => array('uid', 'nid', NULL, 'modified'),
+      'fields' => array('uid', 'nid', NULL, 'timestamp'),
       'entity_type' => array(
           'similarity' => array('node', 'node'),
           'prediction' => array('users', 'node'),
@@ -137,9 +137,19 @@ function history_rec_install() {
   recommender_app_register($apps);
 }
 
+
 /**
  * Implements hook_disable().
  */
 function history_rec_disable() {
+  recommender_app_unregister('history_rec');
+}
+
+
+/**
+ * Implements hook_update_N().
+ * delete old history_rec recommender app.
+ */
+function history_rec_update_7001() {
   recommender_app_unregister('history_rec_i2i');
 }
