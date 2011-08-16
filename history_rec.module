@@ -6,7 +6,7 @@
  */
 
 /**
- * Implementation of hook_help().
+ * Implements hook_help().
  */
 function history_rec_help($path, $args) {
   $output = '';
@@ -16,6 +16,22 @@ function history_rec_help($path, $args) {
       break;
   }
   return $output;
+}
+
+/**
+ * Implements hook_menu().
+ */ 
+function history_rec_menu() {
+  $items = array();
+  $items['admin/config/recommender/history_rec'] = array(
+    'title' => 'Browsing History Recommender',
+    'description' => 'Configure the Browsing History Recommender',
+    'page callback' => 'drupal_get_fodrrm',
+    'page arguments' => array('history_rec_settings_form'),
+    'access arguments' => array('administer recommender'),
+    'file' => 'history_rec.admin.inc'
+  );
+  return $items;
 }
 
 /**
