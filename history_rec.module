@@ -48,7 +48,7 @@ function history_rec_views_api() {
  * Implements hook_cron().
  */
 function history_rec_cron() {
-  if (variable_get('history_rec_source' == 'accesslog')) {
+  if (variable_get('history_rec_source') == 'accesslog') {
     _history_rec_update_accesslog();
   }
 }
@@ -61,6 +61,9 @@ function history_rec_cron() {
 //}
 
 
+/**
+ * take data from accesslog and make them usable as user-item preference.
+ */
 function _history_rec_update_accesslog() {
   // retrieve hostname to be updated from {history_rec_user_mapping}
   $last_updated = _history_rec_last_updated();
@@ -69,36 +72,46 @@ function _history_rec_update_accesslog() {
   $query->condition('timestamp', $last_updated, '>');
   $query->condition('uid', 0);
   $query->condition('hostname', $sub_query, 'NOT IN');
-  $query->execute();
+  $new_hostname = $query->execute()->fetchCol();
   
   // update {history_rec_user_mapping}
-  $euid = db_query('SELECT MIN(euid) FROM {history_rec_user_mapping}');
+  $euid = db_query('SELECT MIN(euid) FROM {history_rec_user_mapping}')->fetchField();
   $insert = db_insert('history_rec_user_mapping')->fields(array('euid', 'uid', 'hostname', 'created'));
-  foreach ($query->fetchCol() as $hostname) {
+  foreach ($new_hostname as $hostname) {
     $euid -= 1;
     $insert->values(array($euid, 0, $hostname, time()));
   }
   $insert->execute();
   
   // update records from {accesslog}
-  $query = db_query('SELECT path, hostname, uid, timestamp FROM {accesslog} WHERE path LIKE "node/%" AND timestamp > :last_updated', array(':last_updated'=>$last_updated));
-  foreach ($query->fetchAllAssoc() as $row) {
-    $nid = substr($row['pathph'], 5); // strip "node/"
+  $result = db_query("SELECT path, hostname, uid, timestamp FROM {accesslog} WHERE path LIKE 'node%' AND timestamp > :last_updated",
+            array(':last_updated' => $last_updated), array('fetch' => PDO::FETCH_ASSOC));
+  
+  foreach ($result as $row) {
+    $nid = substr($row['path'], 5); // strip "node/"   
+    if (!is_numeric($nid)) continue;  // skip the ones like node/21/edit
+    $updated = $row['timestamp'];
+    
     if ($row['uid'] > 0) {
       $euid = $row['uid'];
     }
     else {
       $euid = db_query('SELECT euid FROM {history_rec_user_mapping} WHERE hostname=:hostname', array(':hostname' => $row['hostname']))->fetchField();
     }
+        
+    watchdog('history_rec', "$euid, $nid, $updated");
     db_merge('history_rec_browsing')
-      ->key(array('euid', 'nid'))
-      ->fields(array(
-        'euid' => $row['uid'],
+      ->key(array(
+        'euid' => $euid, 
         'nid' => $nid,
-        'updated' => $row['timestamp'],
+      ))
+      ->fields(array(
+        'euid' => $euid,
+        'nid' => $nid,
+        'updated' => $updated,
       ))
       -> updateFields(array(
-        'updated' => $row['timestamp'],
+        'updated' => $updated,
       ))
       ->execute();
   }
@@ -108,7 +121,7 @@ function _history_rec_update_accesslog() {
 function _history_rec_last_updated() {
   // max() is ANSI standard and is acceptable here: http://drupal.org/node/773090
   $last_updated = db_query('SELECT MAX(updated) FROM {history_rec_browsing}')->fetchField();
-  if ($last_updated == NULL) {
+  if (!($last_updated > 0)) {
     $last_updated = 0;
   }
   return $last_updated;
