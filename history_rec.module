@@ -99,7 +99,7 @@ function _history_rec_update_accesslog() {
       $euid = db_query('SELECT euid FROM {history_rec_user_mapping} WHERE hostname=:hostname', array(':hostname' => $row['hostname']))->fetchField();
     }
         
-    watchdog('history_rec', "$euid, $nid, $updated");
+    //watchdog('history_rec', "$euid, $nid, $updated");
     db_merge('history_rec_browsing')
       ->key(array(
         'euid' => $euid, 

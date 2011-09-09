@@ -13,7 +13,7 @@ function history_rec_views_default_views() {
       'node',
       'title',
       'node',
-      'history_rec_i2i'
+      'history_rec'
     ),
     'history_rec_personal_recommendations' => recommender_default_view_template(
       'history_rec_personal_recommendations',
@@ -23,7 +23,7 @@ function history_rec_views_default_views() {
       'node',
       'title',
       'current_user',
-      'history_rec_i2i'
+      'history_rec'
     ),
   );
 }
