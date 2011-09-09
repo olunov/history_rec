@@ -23,7 +23,7 @@ function history_rec_help($path, $args) {
  */ 
 function history_rec_menu() {
   $items = array();
-  $items['admin/config/recommender/history_rec'] = array(
+  $items['admin/settings/recommender/history_rec'] = array(
     'title' => 'Browsing History Recommender',
     'description' => 'Configure the Browsing History Recommender',
     'page callback' => 'drupal_get_form',
@@ -40,7 +40,7 @@ function history_rec_menu() {
  */
 function history_rec_views_api() {
   return array(
-    'api' => 3,
+    'api' => 2,
   );
 }
 
@@ -67,27 +67,19 @@ function history_rec_cron() {
 function _history_rec_update_accesslog() {
   // retrieve hostname to be updated from {history_rec_user_mapping}
   $last_updated = _history_rec_last_updated();
-  $sub_query = db_select('history_rec_user_mapping', 'm')->fields('m', array('hostname'))->distinct();
-  $query = db_select('accesslog', 'a')->fields('a', array('hostname'))->distinct();
-  $query->condition('timestamp', $last_updated, '>');
-  $query->condition('uid', 0);
-  $query->condition('hostname', $sub_query, 'NOT IN');
-  $new_hostname = $query->execute()->fetchCol();
+  $result = db_query('SELECT DISTINCT a.hostname FROM {accesslog} a WHERE timestamp > %d AND uid = 0
+      AND hostname <> ANY (SELECT DISTINCT m.hostname FROM {history_rec_user_mapping} m)', $last_updated);
   
   // update {history_rec_user_mapping}
-  $euid = db_query('SELECT MIN(euid) FROM {history_rec_user_mapping}')->fetchField();
-  $insert = db_insert('history_rec_user_mapping')->fields(array('euid', 'uid', 'hostname', 'created'));
-  foreach ($new_hostname as $hostname) {
+  $euid = db_result(db_query('SELECT MIN(euid) FROM {history_rec_user_mapping}'));
+  while ($row = db_fetch_array($result)) {
     $euid -= 1;
-    $insert->values(array($euid, 0, $hostname, time()));
+    db_query('INSERT INTO {history_rec_user_mapping}(euid, uid, hostname, created) VALUE(%d, %d, %s, %d)', $euid, 0, $row['hostname'], time());
   }
-  $insert->execute();
   
   // update records from {accesslog}
-  $result = db_query("SELECT path, hostname, uid, timestamp FROM {accesslog} WHERE path LIKE 'node%' AND timestamp > :last_updated",
-            array(':last_updated' => $last_updated), array('fetch' => PDO::FETCH_ASSOC));
-  
-  foreach ($result as $row) {
+  $result = db_query("SELECT path, hostname, uid, timestamp FROM {accesslog} WHERE path LIKE 'node%' AND timestamp > %d", $last_updated);
+  while ($row = db_fetch_array($result)) {
     $nid = substr($row['path'], 5); // strip "node/"   
     if (!is_numeric($nid)) continue;  // skip the ones like node/21/edit
     $updated = $row['timestamp'];
@@ -96,31 +88,19 @@ function _history_rec_update_accesslog() {
       $euid = $row['uid'];
     }
     else {
-      $euid = db_query('SELECT euid FROM {history_rec_user_mapping} WHERE hostname=:hostname', array(':hostname' => $row['hostname']))->fetchField();
+      $euid = db_result(db_query('SELECT euid FROM {history_rec_user_mapping} WHERE hostname=%s', $row['hostname']));
     }
-        
-    watchdog('history_rec', "$euid, $nid, $updated");
-    db_merge('history_rec_browsing')
-      ->key(array(
-        'euid' => $euid, 
-        'nid' => $nid,
-      ))
-      ->fields(array(
-        'euid' => $euid,
-        'nid' => $nid,
-        'updated' => $updated,
-      ))
-      -> updateFields(array(
-        'updated' => $updated,
-      ))
-      ->execute();
+    
+    // to prevent duplicate results, remove old data first.
+    db_query('DELETE FROM {history_rec_browsing} WHERE euid=%d AND nid=%d', $euid, $nid);
+    db_query('INSERT INTO {history_rec_browsing}(euid, nid, updated) VALUE(%d, %d, %d)', $euid, $nid, $updated);
   }
 }
 
 
 function _history_rec_last_updated() {
   // max() is ANSI standard and is acceptable here: http://drupal.org/node/773090
-  $last_updated = db_query('SELECT MAX(updated) FROM {history_rec_browsing}')->fetchField();
+  $last_updated = db_result(db_query('SELECT MAX(updated) FROM {history_rec_browsing}'));
   if (!($last_updated > 0)) {
     $last_updated = 0;
   }

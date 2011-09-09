@@ -8,4 +8,4 @@ dependencies[] = views
 files[] = history_rec.module
 files[] = history_rec.views_default.inc
 
-core = 7.x
+core = 6.x

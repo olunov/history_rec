@@ -90,36 +90,7 @@ function history_rec_schema() {
  * Implements hook_install().
  */
 function history_rec_install() {
-  
-  // [#1217552]
-  
-  /*$boost_comments = variable_get('history_rec_boost_comments', 1);
-  $boost_recency = variable_get('history_rec_boost_recency', 1);
-
-  // we use a timestamp in order to make sure the content of the table doesn't change in the calculation
-  $now = time();
-  $days60 = 60*24*60*60;  // seconds in 60 days
-
-  // prepare the users-nodes relationship.
-
-  $weight = $boost_recency ? "POW(2, -($now-h.timestamp)/$days60)" : 1;
-  $history_sql = "SELECT h.uid, h.nid, $weight weight FROM {history} h
-      INNER JOIN {node} n ON h.nid=n.nid
-      WHERE n.type IN $enabled_types AND n.changed<$now AND h.uid<>0";
-
-  if ($boost_comments) {
-    $weight = $boost_recency ? "POW(2, -($now-MAX(c.timestamp))/$days60)" : 1;
-    $comments_sql = "SELECT c.uid, c.nid, $weight weight FROM {comments} c
-        INNER JOIN {node} n ON c.nid=n.nid
-        WHERE n.type IN $enabled_types AND c.timestamp<$now AND c.uid<>0
-        GROUP BY c.uid, c.nid";
-    $sql = "SELECT uid, nid, SUM(weight) weight FROM ($history_sql UNION ALL $comments_sql) a GROUP BY uid, nid";
-  }
-  else {
-    $sql = $history_sql;
-  }*/
-  
-
+  drupal_install_schema('history_rec');
   $apps['history_rec'] = array(
     'title' => st('Browsing History Recommender'),
     'params' => array(
@@ -145,11 +116,9 @@ function history_rec_disable() {
   recommender_app_unregister('history_rec');
 }
 
-
 /**
- * Implements hook_update_N().
- * delete old history_rec recommender app.
+ * Implements hook_uninstall().
  */
-function history_rec_update_7001() {
-  recommender_app_unregister('history_rec_i2i');
+function history_rec_uninstall() {
+  drupal_uninstall_schema('history_rec');
 }
