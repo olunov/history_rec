@@ -23,7 +23,7 @@ function history_rec_help($path, $args) {
  */ 
 function history_rec_menu() {
   $items = array();
-  $items['admin/config/recommender/history_rec'] = array(
+  $items['admin/config/search/recommender/history_rec'] = array(
     'title' => 'Browsing History Recommender',
     'description' => 'Configure the Browsing History Recommender',
     'page callback' => 'drupal_get_form',

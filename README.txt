@@ -8,8 +8,12 @@ Installation & Configuration
 
 Please first follow README.txt file in Recommender API.
 
-After install the module, please go to admin/config/recommender and compute the recommendations. Then you can enable the default views, customize them if necessary, and then display the recommendations.
+After install the module, please go to admin/config/search/recommender and compute the recommendations. Then you can enable the default views, customize them if necessary, and then display the recommendations.
 
+Minimum database privileges:
+
+GRANT SELECT(euid, nid, updated) ON {history_rec_browsing} TO recommender_user;
+GRANT SELECT(uid, nid, timestamp) ON {history} TO recommender_user;
 
 
 About the module
