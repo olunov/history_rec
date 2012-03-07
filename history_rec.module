@@ -98,7 +98,7 @@ function history_rec_update_accesslog($update_time) {
   foreach ($new_hostname as $hostname) {
     $euid += 1;
     $insert->values(array($euid, 0, $hostname, time()));
-    $insert->execute(); // this is to avoid too much data in the memory, so we insert records one-by-one.
+    $insert->execute(); // this is to avoid too much data in the memory, so we insert records one at a time.
   }
   
   // update records from {accesslog}
@@ -151,6 +151,11 @@ function _history_rec_update_euid() {
   if ($watermark - $max_uid < HISTORY_REC_UID_WATERMARK_INCREMENT) {
     $watermark += HISTORY_REC_UID_WATERMARK_INCREMENT;
     variable_set('history_rec_uid_watermark', $watermark);
+    recommender_app_update('history_rec', array(
+      'prediction_score_filter' => '>0.05',
+      'prediction_source_filter' => '<'. $watermark,
+    ));
+
     db_query('UPDATE {history_rec_user_map} SET euid = euid + :inc WHERE uid == 0', array(':inc' => HISTORY_REC_UID_WATERMARK_INCREMENT));
     // attention: since we use item-item algorithm, {recommender_similarity} needs not update
     // attention: also, we won't save predictions for the fake users, so {recommender_prediction} needs no update

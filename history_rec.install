@@ -53,9 +53,34 @@ function history_rec_schema() {
  * Implements hook_install().
  */
 function history_rec_install() {
-  
+
+  variable_set('history_rec_uid_watermark', 2 * HISTORY_REC_UID_WATERMARK_INCREMENT);
+  variable_set('history_rec_last_updated', 0);
+
+  db_query("INSERT INTO {history_rec_user_map} VALUE (:euid, 0, '127.0.0.1', :time)",
+    array(':euid' => variable_get('history_rec_uid_watermark'), ':time' => time()));
+
+  $apps['history_rec'] = array(
+    'title' => st('Browsing History Recommender'),
+    'params' => array(
+      'algorithm' => 'item2item',
+      'table' => '{history}',
+      'fields' => array('uid', 'nid', NULL, 'timestamp'),
+      'entity_type' => array(
+          'similarity' => array('node', 'node'),
+          'prediction' => array('users', 'node'),
+      ),
+      'performance' => 'auto',
+      'preference' => 'boolean',
+      'similarity_score_filter' => '>0.05',
+      'prediction_score_filter' => '>0.05',
+      'prediction_source_filter' => '<'. variable_get('history_rec_uid_watermark'),
+    ),
+  );
+  recommender_app_register($apps);
+
   // [#1217552]
-  
+
   /*$boost_comments = variable_get('history_rec_boost_comments', 1);
   $boost_recency = variable_get('history_rec_boost_recency', 1);
 
@@ -81,28 +106,6 @@ function history_rec_install() {
   else {
     $sql = $history_sql;
   }*/
-  
-
-  $apps['history_rec'] = array(
-    'title' => st('Browsing History Recommender'),
-    'params' => array(
-      'algorithm' => 'item2item',
-      'table' => '{history}',
-      'fields' => array('uid', 'nid', NULL, 'timestamp'),
-      'entity_type' => array(
-          'similarity' => array('node', 'node'),
-          'prediction' => array('users', 'node'),
-      ),
-      'performance' => 'auto',
-      'preference' => 'boolean',
-    ),
-  );
-  recommender_app_register($apps);
-
-  variable_set('history_rec_uid_watermark', 2 * HISTORY_REC_UID_WATERMARK_INCREMENT);
-  variable_set('history_rec_last_updated', 0);
-  db_query("INSERT INTO {history_rec_user_map} VALUE (:euid, 0, '127.0.0.1', :time)",
-    array(':euid' => variable_get('history_rec_uid_watermark'), ':time' => time()));
 }
 
 
@@ -142,4 +145,18 @@ function history_rec_update_7002() {
   variable_set('history_rec_last_updated', 0);
   db_query("INSERT INTO {history_rec_user_map} VALUE (:euid, 0, '127.0.0.1', :time)",
       array(':euid' => variable_get('history_rec_uid_watermark'), ':time' => time()));
+
+  recommender_app_update('history_rec', array(
+    'prediction_score_filter' => '>0.05',
+    'prediction_source_filter' => '<'. variable_get('history_rec_uid_watermark'),
+  ));
+}
+
+/**
+ * Update recommender settings.
+ */
+function history_rec_update_7003() {
+  recommender_app_update('history_rec', array(
+    'similarity_score_filter' => '>0.05',
+  ));
 }
