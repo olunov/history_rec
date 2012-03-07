@@ -9,14 +9,14 @@
  */
 function history_rec_schema() {
   $schema = array(
-    'history_rec_user_mapping' => array(
+    'history_rec_user_map' => array(
       'description' => 'This table stores anonymous user to euid mapping',
       'fields' => array(
         'euid' => array(
           'description' => 'The extended user_id, with negative id assigned to different anonymous users based on ip address.',
           'type' => 'int',
           'size' => 'normal',
-          'unsigned' => FALSE,
+          'unsigned' => TRUE,
           'not null' => TRUE,
         ),
         'uid' => array(
@@ -42,43 +42,6 @@ function history_rec_schema() {
       'indexes' => array(
         'uid_hostname' => array('uid', 'hostname'),
         'created' => array('created'),
-      ),
-    ),
-  
-    'history_rec_browsing' => array(
-      'description' => 'This table stores user-item browsing hisory',
-      'fields' => array(
-        'euid' => array(
-          'description' => 'The extended user_id, with negative id assigned to different anonymous users based on ip address.',
-          'type' => 'int',
-          'size' => 'normal',
-          'unsigned' => FALSE,
-          'not null' => TRUE,
-        ),
-        'nid' => array(
-          'description' => 'The node id',
-          'type' => 'int',
-          'size' => 'normal',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
-        ),
-        //'score' => array(
-        //  'type' => 'float',
-        //  'size' => 'normal',
-        //  'not null' => FALSE,
-        //  'description' => 'The preference score. Higher score means source prefers target more.',
-        //),
-        'updated' => array(
-          'description' => 'The Unix timestamp this preference is last changed',
-          'type' => 'int',
-          'not null' => TRUE,
-          'default' => 0,
-        ),
-      ),
-      'primary key' => array('euid', 'nid'),
-      'indexes' => array(
-        //'score' => array('score'),
-        'updated' => array('updated'),
       ),
     ),
   );
@@ -135,6 +98,11 @@ function history_rec_install() {
     ),
   );
   recommender_app_register($apps);
+
+  variable_set('history_rec_uid_watermark', 2 * HISTORY_REC_UID_WATERMARK_INCREMENT);
+  variable_set('history_rec_last_updated', 0);
+  db_query("INSERT INTO {history_rec_user_map} VALUE (:euid, 0, '127.0.0.1', :time)",
+    array(':euid' => variable_get('history_rec_uid_watermark'), ':time' => time()));
 }
 
 
@@ -142,7 +110,14 @@ function history_rec_install() {
  * Implements hook_disable().
  */
 function history_rec_disable() {
-  recommender_app_unregister('history_rec');
+  recommender_app_remove('history_rec');
+}
+
+function history_rec_uninstall() {
+  variable_del('history_rec_uid_watermark');
+  variable_del('history_rec_last_updated');
+  variable_del('history_rec_source');
+  recommender_app_remove('history_rec');
 }
 
 
@@ -152,4 +127,19 @@ function history_rec_disable() {
  */
 function history_rec_update_7001() {
   recommender_app_unregister('history_rec_i2i');
+}
+
+/**
+ * update table.
+ */
+function history_rec_update_7002() {
+  db_drop_table('history_rec_browsing');
+  db_drop_table('history_rec_user_mapping');
+  $schema = history_rec_schema();
+  db_create_table('history_rec_user_map', $schema['history_rec_user_map']);
+
+  variable_set('history_rec_uid_watermark', 2 * HISTORY_REC_UID_WATERMARK_INCREMENT);
+  variable_set('history_rec_last_updated', 0);
+  db_query("INSERT INTO {history_rec_user_map} VALUE (:euid, 0, '127.0.0.1', :time)",
+      array(':euid' => variable_get('history_rec_uid_watermark'), ':time' => time()));
 }
