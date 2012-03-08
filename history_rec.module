@@ -51,8 +51,12 @@ function history_rec_views_api() {
  */
 function history_rec_cron() {
   if (variable_get('history_rec_source') == 'accesslog') {
+    $current_aid = variable_get('history_rec_last_aid', 0) + 50000; // at most update 50K records at once.
+    $max_aid = db_query('SELECT MAX(aid) FROM {accesslog}')->fetchField();
+    $current_aid = min($current_aid, $max_aid);
+
     $update_queue = DrupalQueue::get('history_rec_update_accesslog');
-    $update_queue->createItem(time());
+    $update_queue->createItem($current_aid);
   }
 }
 
@@ -63,7 +67,7 @@ function history_rec_cron_queue_info() {
   return array(
     'history_rec_update_accesslog' => array(
       'worker callback' => 'history_rec_update_accesslog',
-      'time' => 600, // use 10 mins
+      'time' => 3600, // allow 60 mins
     ),
   );
 }
@@ -79,15 +83,15 @@ function history_rec_cron_queue_info() {
 /**
  * take data from accesslog and make them usable as user-item preference.
  */
-function history_rec_update_accesslog($update_time) {
+function history_rec_update_accesslog($current_aid) {
   // update extended uid
   _history_rec_update_euid();
-  $last_updated = variable_get('history_rec_last_updated', 0);
+  $last_aid = variable_get('history_rec_last_aid', 0);
 
   // retrieve unique hostname from {accesslog} to be updated to {history_rec_user_map}
   $sub_query = db_select('history_rec_user_map', 'm')->fields('m', array('hostname'))->distinct();
   $query = db_select('accesslog', 'a')->fields('a', array('hostname'))->distinct();
-  $query->condition('timestamp', array($last_updated, $update_time), 'BETWEEN');
+  $query->condition('aid', array($last_aid, $current_aid), 'BETWEEN');
   $query->condition('uid', 0);
   $query->condition('hostname', $sub_query, 'NOT IN');
   $new_hostname = $query->execute()->fetchCol();
@@ -102,8 +106,8 @@ function history_rec_update_accesslog($update_time) {
   }
   
   // update records from {accesslog}
-  $result = db_query("SELECT path, hostname, uid, timestamp FROM {accesslog} WHERE path LIKE 'node%' AND timestamp BETWEEN :last_updated AND :update_time",
-            array(':last_updated' => $last_updated, ':update_time' => $update_time), array('fetch' => PDO::FETCH_ASSOC));
+  $result = db_query("SELECT path, hostname, uid, timestamp FROM {accesslog} WHERE path LIKE 'node%' AND aid BETWEEN :last_aid AND :current_aid",
+            array(':last_aid' => $last_aid, ':current_aid' => $current_aid), array('fetch' => PDO::FETCH_ASSOC));
   $app_id = recommender_app_load('history_rec', TRUE);
   
   foreach ($result as $row) {
@@ -138,7 +142,7 @@ function history_rec_update_accesslog($update_time) {
   }
 
   // finally set last update time.
-  variable_set('history_rec_last_updated', $update_time);
+  variable_set('history_rec_last_aid', $current_aid);
 }
 
 

@@ -40,7 +40,7 @@ function history_rec_schema() {
       ),
       'primary key' => array('euid'),
       'indexes' => array(
-        'uid_hostname' => array('uid', 'hostname'),
+        'hostname' => array('hostname'),
         'created' => array('created'),
       ),
     ),
@@ -55,7 +55,7 @@ function history_rec_schema() {
 function history_rec_install() {
 
   variable_set('history_rec_uid_watermark', 2 * HISTORY_REC_UID_WATERMARK_INCREMENT);
-  variable_set('history_rec_last_updated', 0);
+  variable_set('history_rec_last_aid', 0);
 
   db_query("INSERT INTO {history_rec_user_map} VALUE (:euid, 0, '127.0.0.1', :time)",
     array(':euid' => variable_get('history_rec_uid_watermark'), ':time' => time()));
@@ -118,7 +118,7 @@ function history_rec_disable() {
 
 function history_rec_uninstall() {
   variable_del('history_rec_uid_watermark');
-  variable_del('history_rec_last_updated');
+  variable_del('history_rec_last_aid');
   variable_del('history_rec_source');
   recommender_app_remove('history_rec');
 }
@@ -159,4 +159,14 @@ function history_rec_update_7003() {
   recommender_app_update('history_rec', array(
     'similarity_score_filter' => '>0.05',
   ));
+}
+
+/**
+ * Update index.
+ */
+function history_rec_update_7004() {
+  db_drop_index('history_rec_user_map', 'uid_hostname');
+  db_add_index('history_rec_user_map', 'hostname', array('hostname'));
+  variable_del('history_rec_last_updated');
+  variable_set('history_rec_last_aid', 0);
 }
