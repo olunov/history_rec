@@ -4,7 +4,6 @@ package = Recommendation
 core = 7.x
 
 dependencies[] = recommender
-dependencies[] = views
 
 configure = admin/config/system/computing/recommender/history_rec
 

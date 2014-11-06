@@ -64,7 +64,7 @@ function history_rec_views_default_views() {
 
   /* Display: Block */
   $handler = $view->new_display('block', 'Block', 'block');
-  $views[] = $view;
+  $views[$view->name] = $view;
 
 
   $view = new view();
@@ -130,7 +130,7 @@ function history_rec_views_default_views() {
 
   /* Display: Block */
   $handler = $view->new_display('block', 'Block', 'block');
-  $views[] = $view;
+  $views[$view->name] = $view;
 
 
   $view = new view();
@@ -196,7 +196,7 @@ function history_rec_views_default_views() {
 
   /* Display: Block */
   $handler = $view->new_display('block', 'Block', 'block');
-  $views[] = $view;
+  $views[$view->name] = $view;
 
   return $views;
 }
