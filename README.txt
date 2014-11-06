@@ -1,32 +1,31 @@
 Browsing History Recommender
 ============================
 
-This module uses [Recommender API](http://drupal.org/project/recommender) to generate these recommendations based on users' browsing history:
+This module uses [Recommender API](http://drupal.org/project/recommender) to generate content recommendations based on users' browsing history:
 
-  * "Users who viewed this node also viewed"
-  * "Recommendations to me based on my browsing history"
+  * For each node: "Users who viewed this node also viewed"
+  * For each user: "Personalized recommendations to me"
+  
+Users browsing history data are either from Drupal's built-in "history" database table, or from the "accesslog" database table provided by the Statistics module in Drupal Core.
     
 
 Installation & Configuration
 ----------------------------
 
-Please first follow README.txt file in Recommender API.
+You need to install the Recommender API module and Drupal Computing module before install this module.
 
-After install the module, please go to admin/config/search/recommender/admin and compute the recommendations. Then you can enable the default views, customize them if necessary, and then display the recommendations.
+After installation, follow these steps to compute recommendations:
 
-Minimum database privileges in addition to those required by RecommenderAPI module:
+  1. Go to admin/config/system/computing/recommender/history_rec to review the settings, and make changes if necessary. Note that the "Use accesslog table" option is only valid if you enable the "Statistics" module in Core.
+  2. Run Drupal Cron to feed data into recommender.
+  3. Go to admin/config/system/computing/add, and click "Browsing History Recommender" to add a computing command.
+  4. Compute recommendations using either of the following approaches:
+    - Open a command line terminal and run "drush recommender-run".
+    - Open a command line terminal and execute the Recommender Java agent.
+    - Go to admin/config/system/computing/recommender and click "Run Recommender". You might experience PHP "Out of Memory" error depending on the size of your data.
+  5. You can view the execution results at admin/config/system/computing/records.
 
-GRANT SELECT(uid, nid, timestamp) ON {history} TO recommender_user;
-
-
-About the module
-----------------
-
-This module adds two blocks:
-1) Users who browsed this node also browsed
-2) Personalized recommendations
-
-To compute recommendations, the module uses {history} which keeps track of 30 days of node browsing history.
+For more information about how the module works, please read the documentation of Recommender API.
 
 
 Limitations and Customizations
@@ -35,7 +34,6 @@ Limitations and Customizations
 This module is **not** able to:
   
   * Make recommendations for entity types other than "node".
-  * Access data sources other than `$database['default']` for better performance.
+  * Access database other than `$database['default']` for better performance.
 
-To do those, you need to customize the module. Please contact the developer for more details.
-
+To do those, you need to customize the module on the code level.
