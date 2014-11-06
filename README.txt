@@ -1,7 +1,11 @@
-============================
 Browsing History Recommender
 ============================
 
+This module uses [Recommender API](http://drupal.org/project/recommender) to generate these recommendations based on users' browsing history:
+
+  * "Users who viewed this node also viewed"
+  * "Recommendations to me based on my browsing history"
+    
 
 Installation & Configuration
 ----------------------------
@@ -23,4 +27,15 @@ This module adds two blocks:
 2) Personalized recommendations
 
 To compute recommendations, the module uses {history} which keeps track of 30 days of node browsing history.
+
+
+Limitations and Customizations
+------------------------------
+
+This module is **not** able to:
+  
+  * Make recommendations for entity types other than "node".
+  * Access data sources other than `$database['default']` for better performance.
+
+To do those, you need to customize the module. Please contact the developer for more details.
 
