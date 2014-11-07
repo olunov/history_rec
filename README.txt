@@ -18,7 +18,7 @@ After installation, follow these steps to compute recommendations:
 
   1. Go to admin/config/system/computing/recommender/history_rec to review the settings, and make changes if necessary. Note that the "Use accesslog table" option is only valid if you enable the "Statistics" module in Core.
   2. Run Drupal Cron to feed data into recommender.
-  3. Go to admin/config/system/computing/add, and click "Browsing History Recommender" to add a computing command.
+  3. Go to admin/config/system/computing/list, and click "Browsing History Recommender" to add a computing command.
   4. Compute recommendations using either of the following approaches:
     - Open a command line terminal and run "drush recommender-run".
     - Open a command line terminal and execute the Recommender Java agent.
