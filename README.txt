@@ -1,18 +1,11 @@
 Browsing History Recommender
 ============================
 
-This module uses [Recommender API](http://drupal.org/project/recommender) to generate content recommendations based on users' browsing history:
-
-  * For each node: "Users who viewed this node also viewed"
-  * For each user: "Personalized recommendations to me"
-  
-Users browsing history data are either from Drupal's built-in "history" database table, or from the "accesslog" database table provided by the Statistics module in Drupal Core.
-    
 
 Installation & Configuration
 ----------------------------
 
-You need to install the Recommender API module and Drupal Computing module before install this module.
+You need to install the Recommender API (7.x-6.x) module and Drupal Computing module before install this module.
 
 After installation, follow these steps to compute recommendations:
 
@@ -22,18 +15,25 @@ After installation, follow these steps to compute recommendations:
   4. Compute recommendations using either of the following approaches:
     - Open a command line terminal and run "drush recommender-run".
     - Open a command line terminal and execute the Recommender Java agent.
-    - Go to admin/config/system/computing/recommender and click "Run Recommender". You might experience PHP "Out of Memory" error depending on the size of your data.
+    - Go to admin/config/system/computing/recommender and click "Run Recommender" (not recommended).
   5. You can view the execution results at admin/config/system/computing/records.
+  6. Display recommendation results using the default Views.
 
 For more information about how the module works, please read the documentation of Recommender API.
 
 
-Limitations and Customizations
-------------------------------
+Technology Explanation
+----------------------
+
+This module uses Recommender API to compute recommendations, using the item-based collaborative filtering algorithm. The basic idea is that two items are related because users always browse them together, and items should be recommended to me because I have viewed other related items before. For more details about the algorithm, see the paper at http://portal.acm.org/citation.cfm?id=642471.
+
+Users browsing history data are saved either in Drupal's built-in "history" table, or in the "accesslog" table if you enable the "statistics" module in core. The "history" table tracks registered users browsing history on nodes in the past 30 days. The "accesslog" table tracks all users (including anonymous users) browsing history on any links on the site in the past X days. Regardless of which table you use, this module will dump data in its own table for the purpose of recommendation computation. The benefit of using "accesslog" table is that you can use browsing history data from anonymous users.
+
+
+Limitations
+-----------
 
 This module is **not** able to:
   
   * Make recommendations for entity types other than "node".
-  * Access database other than `$database['default']` for better performance.
-
-To do those, you need to customize the module on the code level.
+  * Use "comments" as browsing history (the "boost comments" feature was in previous releases, but not yet added here).
