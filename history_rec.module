@@ -74,7 +74,8 @@ function history_rec_recommender_data() {
       'options' => array(
         'prediction skip invalid uid' => TRUE,
       ),
-      'form elements callback' => 'history_rec_extra_options'
+      'form elements callback' => 'history_rec_extra_options',
+      'cron callback' => 'history_rec_update_data',
     ),
   );
 }
@@ -143,26 +144,6 @@ function history_rec_settings_form() {
   return system_settings_form($form);
 }
 
-
-/**
- * Implements hook_cron().
- */
-function history_rec_cron() {
-  $update_queue = DrupalQueue::get('history_rec_update_data');
-  $update_queue->createItem(time());
-}
-
-/**
- * Implements hook_cron_queue_info().
- */
-function history_rec_cron_queue_info() {
-  return array(
-    'history_rec_update_data' => array(
-      'worker callback' => 'history_rec_update_data',
-      'time' => 600, // allow 10 mins
-    ),
-  );
-}
 
 /**
  * Archive users' browsing history data from the data source (either {history} or {accesslog}) into {history_rec_data}.
