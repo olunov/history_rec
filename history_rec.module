@@ -39,6 +39,7 @@ function history_rec_menu() {
 function history_rec_views_api() {
   return array(
     'api' => 3,
+    'path' => drupal_get_path('module', 'history_rec') . '/includes',
   );
 }
 
@@ -232,34 +233,4 @@ function history_rec_get_euid() {
   }
 
   return NULL;
-}
-
-/**
- * Implements hook_views_query_alter().
- */
-function history_rec_views_query_alter(&$view, &$query) {
-  // Checking views query with 'history_rec__load_euid' tag only.
-  if (!empty($query->options['query_tags']) && in_array('history_rec__load_euid', $query->options['query_tags'])) {
-    // Looking for condition with `uid` from `history_rec_prediction`.
-    if (!empty($query->where)) {
-      foreach ($query->where as $group => $where_group) {
-        if (!empty($where_group['conditions'])) {
-          foreach ($where_group['conditions'] as $index => $condition) {
-            // When we found condition.
-            if (isset($condition['value'][':history_rec_prediction_uid']) && $condition['value'][':history_rec_prediction_uid'] === 0) {
-              // Main issue here is about what current_user context returns in view.
-              // For anonymous user it is 0, but in `history_rec_prediction`
-              // it is stored as foreign key to `history_rec_ext_users`.
-              // And there it is not 0, but incremental value with '-'.
-              // So load correct external uid.
-              $euid = history_rec_get_euid();
-
-              // Updated it in condition
-              $query->where[$group]['conditions'][$index]['value'][':history_rec_prediction_uid'] = $euid;
-            }
-          }
-        }
-      }
-    }
-  }
 }
