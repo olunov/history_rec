@@ -51,7 +51,7 @@ function history_rec_views_default_views() {
   $handler->display->display_options['arguments']['euid']['table'] = 'history_rec_data';
   $handler->display->display_options['arguments']['euid']['field'] = 'euid';
   $handler->display->display_options['arguments']['euid']['default_action'] = 'default';
-  $handler->display->display_options['arguments']['euid']['default_argument_type'] = 'current_user';
+  $handler->display->display_options['arguments']['euid']['default_argument_type'] = 'history_rec_current_user';
   $handler->display->display_options['arguments']['euid']['summary']['number_of_records'] = '0';
   $handler->display->display_options['arguments']['euid']['summary']['format'] = 'default_summary';
   $handler->display->display_options['arguments']['euid']['summary_options']['items_per_page'] = '25';
@@ -177,7 +177,7 @@ function history_rec_views_default_views() {
   $handler->display->display_options['arguments']['uid']['table'] = 'history_rec_prediction';
   $handler->display->display_options['arguments']['uid']['field'] = 'uid';
   $handler->display->display_options['arguments']['uid']['default_action'] = 'default';
-  $handler->display->display_options['arguments']['uid']['default_argument_type'] = 'current_user';
+  $handler->display->display_options['arguments']['uid']['default_argument_type'] = 'history_rec_current_user';
   $handler->display->display_options['arguments']['uid']['summary']['number_of_records'] = '0';
   $handler->display->display_options['arguments']['uid']['summary']['format'] = 'default_summary';
   $handler->display->display_options['arguments']['uid']['summary_options']['items_per_page'] = '25';

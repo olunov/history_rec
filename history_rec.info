@@ -9,4 +9,3 @@ files[] = includes/history_rec.views.inc
 files[] = includes/history_rec_views_plugin_argument_default_current_user.inc
 
 configure = admin/config/system/computing/recommender/history_rec
-

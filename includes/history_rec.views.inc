@@ -13,7 +13,7 @@ function history_rec_views_plugins() {
     'module' => 'history_rec',
     'argument default' => array(
       'history_rec_current_user' => array(
-        'title' => t('User ID from logged in user or External UID from history_rec_ext_users'),
+        'title' => t('User ID from logged in user or External UID for anonymous'),
         'handler' => 'history_rec_views_plugin_argument_default_current_user',
         'path' => drupal_get_path('module', 'history_rec') . '/includes',
       ),
