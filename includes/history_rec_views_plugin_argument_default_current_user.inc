@@ -19,7 +19,7 @@ class history_rec_views_plugin_argument_default_current_user extends views_plugi
     }
     else {
       $euid = history_rec_get_euid();
-      return $euid;
+      return !empty($euid) ? $euid : 0;
     }
   }
 }
